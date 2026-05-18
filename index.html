@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Облік ЗУ"/>
+<meta name="theme-color" content="#3B6D11"/>
+<title>Облік ЗУ — ППО</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#ffffff;--bg2:#f5f5f4;--bg3:#ececea;
+  --text:#1a1a18;--text2:#5f5e5a;--text3:#888780;
+  --border:#e0ddd8;--border2:#c8c5be;
+  --green:#3B6D11;--green-light:#EAF3DE;--green-mid:#639922;
+  --blue:#185FA5;--red:#A32D2D;--amber:#BA7517;
+  --radius:8px;--radius-lg:12px;
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1c1c1a;--bg2:#252522;--bg3:#2e2e2b;
+    --text:#f0ede8;--text2:#a8a49e;--text3:#6e6b65;
+    --border:#3a3834;--border2:#4e4b46;
+    --green:#639922;--green-light:#1e2e0f;--green-mid:#7ab82a;
+    --blue:#378ADD;--red:#E24B4A;--amber:#EF9F27
+  }
+}
+body{font-family:var(--font);background:var(--bg3);color:var(--text);min-height:100vh;min-height:-webkit-fill-available}
+.app{max-width:480px;margin:0 auto;background:var(--bg);min-height:100vh;min-height:-webkit-fill-available;display:flex;flex-direction:column}
+
+/* HEADER */
+.hdr{background:var(--bg2);border-bottom:0.5px solid var(--border2);padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:20}
+.hdr-radar{width:42px;height:42px;flex-shrink:0}
+.hdr-title{font-size:16px;font-weight:600;color:var(--text)}
+.hdr-sub{font-size:12px;color:var(--text2);margin-top:1px}
+
+/* TABS */
+.tabs{display:flex;border-bottom:0.5px solid var(--border);background:var(--bg);position:sticky;top:71px;z-index:19}
+.tab{flex:1;padding:11px 4px;font-size:13px;font-weight:500;color:var(--text2);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s}
+.tab.active{color:var(--green);border-bottom-color:var(--green)}
+.tab-icon{font-size:16px;display:block;margin-bottom:2px}
+
+/* SECTIONS */
+.section{padding:16px;flex:1}
+.field{margin-bottom:14px}
+.label{display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.field select,.field input[type=text],.field input[type=date],.field input[type=number]{
+  width:100%;padding:11px 13px;font-size:16px;
+  border:0.5px solid var(--border2);border-radius:var(--radius);
+  background:var(--bg);color:var(--text);
+  appearance:none;-webkit-appearance:none
+}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888780' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:36px}
+.field select:focus,.field input:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 2px #3B6D1120}
+.field input[readonly]{background:var(--bg2);color:var(--green);font-weight:600}
+
+/* AMMO GRID */
+.ammo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.ammo-card{
+  border:0.5px solid var(--border);border-radius:var(--radius-lg);
+  padding:10px 8px;cursor:pointer;background:var(--bg);
+  transition:border-color .15s,background .15s;
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  min-height:90px;justify-content:center
+}
+.ammo-card:active{background:var(--bg2)}
+.ammo-card.selected{border:1.5px solid var(--green);background:var(--green-light)}
+.ammo-card-name{font-size:11px;font-weight:600;text-align:center;color:var(--text);line-height:1.3}
+.ammo-card svg{width:60px;height:42px}
+
+/* NUMS ROW */
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.remain-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end}
+.auto-badge{font-size:10px;color:var(--green);background:var(--green-light);padding:1px 6px;border-radius:4px;margin-left:5px;font-weight:500}
+
+/* SUBMIT */
+.btn-submit{
+  width:100%;padding:14px;background:var(--green);color:#fff;
+  border:none;border-radius:var(--radius);font-size:16px;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-top:6px;letter-spacing:.2px
+}
+.btn-submit:active{opacity:.85}
+
+/* LOG */
+.log-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.log-hdr-title{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.btn-csv{
+  padding:7px 13px;font-size:12px;font-weight:600;color:var(--green);
+  background:none;border:0.5px solid var(--green);border-radius:var(--radius);
+  cursor:pointer;display:flex;align-items:center;gap:5px
+}
+.entry-card{
+  background:var(--bg2);border:0.5px solid var(--border);
+  border-radius:var(--radius-lg);padding:13px 14px;margin-bottom:10px;
+  overflow:hidden;position:relative
+}
+.ec-bg{position:absolute;right:-4px;top:50%;transform:translateY(-50%);opacity:.06;pointer-events:none}
+.ec-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;gap:8px}
+.ec-unit{font-size:13px;font-weight:600;color:var(--text);flex:1}
+.ec-date{font-size:11px;color:var(--text3);white-space:nowrap}
+.ec-type-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.ec-type-badge{font-size:11px;color:var(--green);background:var(--green-light);padding:2px 9px;border-radius:4px;font-weight:600}
+.ec-nums{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.ec-num{text-align:center;background:var(--bg);border-radius:var(--radius);padding:8px 4px;border:0.5px solid var(--border)}
+.ec-num-val{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.ec-num-lbl{font-size:10px;color:var(--text3);margin-top:2px;font-weight:500}
+.ec-num.received .ec-num-val{color:var(--blue)}
+.ec-num.spent .ec-num-val{color:var(--red)}
+.stock-bar-wrap{margin-top:10px}
+.stock-bar-lbl{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:4px;font-weight:500}
+.stock-bar-track{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.stock-bar-fill{height:100%;border-radius:3px;transition:width .4s ease}
+.ec-note{font-size:12px;color:var(--text2);margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border)}
+
+/* STATS */
+.stat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}
+.stat-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:11px 8px;text-align:center}
+.stat-val{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.stat-lbl{font-size:11px;color:var(--text2);margin-top:2px;font-weight:500}
+.stat-received .stat-val{color:var(--blue)}
+.stat-spent .stat-val{color:var(--red)}
+.stat-remain .stat-val{color:var(--green)}
+
+/* EMPTY */
+.empty{text-align:center;padding:40px 16px;color:var(--text3)}
+.empty-icon{font-size:48px;margin-bottom:12px}
+.empty-text{font-size:14px}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:28px;left:50%;
+  transform:translateX(-50%) translateY(16px);
+  background:var(--green);color:#fff;padding:11px 22px;
+  border-radius:var(--radius);font-size:14px;font-weight:500;
+  opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;z-index:99
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="hdr">
+  <svg class="hdr-radar" viewBox="0 0 42 42" fill="none" aria-hidden="true">
+    <circle cx="21" cy="21" r="19" stroke="#3B6D11" stroke-width="1.2"/>
+    <circle cx="21" cy="21" r="13" stroke="#3B6D11" stroke-width="0.7" stroke-dasharray="2.5 2"/>
+    <circle cx="21" cy="21" r="6.5" stroke="#3B6D11" stroke-width="0.7" stroke-dasharray="2 2"/>
+    <line x1="21" y1="2" x2="21" y2="40" stroke="#3B6D11" stroke-width="0.5" opacity="0.35"/>
+    <line x1="2" y1="21" x2="40" y2="21" stroke="#3B6D11" stroke-width="0.5" opacity="0.35"/>
+    <g style="transform-origin:21px 21px;animation:sweep 3s linear infinite">
+      <line x1="21" y1="21" x2="35" y2="8" stroke="#3B6D11" stroke-width="1.8" stroke-linecap="round"/>
+    </g>
+    <circle cx="29" cy="12" r="2.2" fill="#3B6D11" opacity="0.75"/>
+    <circle cx="14" cy="28" r="1.5" fill="#3B6D11" opacity="0.4"/>
+    <style>@keyframes sweep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}</style>
+  </svg>
+  <div>
+    <div class="hdr-title">Облік ЗУ — ППО</div>
+    <div class="hdr-sub">Щоденний рух засобів ураження</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('form',this)">
+    <span class="tab-icon">＋</span>Внести
+  </button>
+  <button class="tab" onclick="showTab('log',this)">
+    <span class="tab-icon">≡</span>Журнал
+  </button>
+  <button class="tab" onclick="showTab('stats',this)">
+    <span class="tab-icon">▦</span>Зведення
+  </button>
+</div>
+
+<!-- ФОРМА -->
+<div id="tab-form" class="section">
+  <div class="field">
+    <label class="label">Підрозділ / розрахунок</label>
+    <select id="unit">
+      <option value="">— оберіть розрахунок —</option>
+      <option>1-й розрахунок / 1-а зенітна рота</option>
+      <option>2-й розрахунок / 1-а зенітна рота</option>
+      <option>3-й розрахунок / 1-а зенітна рота</option>
+      <option>1-й розрахунок / 2-а зенітна рота</option>
+      <option>2-й розрахунок / 2-а зенітна рота</option>
+      <option>3-й розрахунок / 2-а зенітна рота</option>
+      <option>1-й розрахунок / 3-а зенітна рота</option>
+      <option>2-й розрахунок / 3-а зенітна рота</option>
+    </select>
+  </div>
+  <div class="field">
+    <label class="label">Дата звіту</label>
+    <input type="date" id="rdate"/>
+  </div>
+
+  <label class="label" style="margin-bottom:8px">Тип засобу ураження</label>
+  <input type="hidden" id="ammo" value=""/>
+  <div class="ammo-grid">
+    <div class="ammo-card" onclick="selectAmmo(this,'ПЗРК')">
+      <svg viewBox="0 0 64 44" fill="none" aria-hidden="true">
+        <ellipse cx="14" cy="30" rx="5" ry="8" fill="#5F5E5A"/>
+        <rect x="11" y="22" width="6" height="10" rx="1" fill="#444441"/>
+        <rect x="8" y="24" width="38" height="5" rx="2" fill="#5F5E5A"/>
+        <rect x="46" y="23" width="14" height="3" rx="1.5" fill="#3B6D11"/>
+        <polygon points="60,24.5 64,25 60,25.5" fill="#3B6D11"/>
+        <rect x="8" y="27" width="3" height="4" rx="1" fill="#444441"/>
+        <rect x="16" y="27" width="3" height="4" rx="1" fill="#444441"/>
+        <circle cx="14" cy="36" r="4" fill="#2C2C2A" stroke="#5F5E5A" stroke-width="1"/>
+        <circle cx="14" cy="36" r="2" fill="#444441"/>
+        <line x1="20" y1="22" x2="22" y2="16" stroke="#888780" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="22" y1="16" x2="26" y2="16" stroke="#888780" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <div class="ammo-card-name">ПЗРК</div>
+    </div>
+    <div class="ammo-card" onclick="selectAmmo(this,'ЗРК малої дальності')">
+      <svg viewBox="0 0 64 44" fill="none" aria-hidden="true">
+        <rect x="4" y="28" width="56" height="8" rx="2" fill="#5F5E5A"/>
+        <circle cx="12" cy="36" r="4" fill="#2C2C2A" stroke="#5F5E5A" stroke-width="1"/>
+        <circle cx="52" cy="36" r="4" fill="#2C2C2A" stroke="#5F5E5A" stroke-width="1"/>
+        <circle cx="12" cy="36" r="2" fill="#444441"/>
+        <circle cx="52" cy="36" r="2" fill="#444441"/>
+        <rect x="20" y="20" width="24" height="10" rx="2" fill="#444441"/>
+        <rect x="22" y="10" width="3" height="10" rx="1" fill="#3B6D11" transform="rotate(-15 22 10)"/>
+        <rect x="30" y="8" width="3" height="12" rx="1" fill="#3B6D11" transform="rotate(-10 30 8)"/>
+        <rect x="38" y="10" width="3" height="10" rx="1" fill="#3B6D11" transform="rotate(15 38 10)"/>
+        <circle cx="30" cy="22" r="3" fill="#888780"/>
+      </svg>
+      <div class="ammo-card-name">ЗРК малої дальності</div>
+    </div>
+    <div class="ammo-card" onclick="selectAmmo(this,'ЗРК середньої дальності')">
+      <svg viewBox="0 0 64 44" fill="none" aria-hidden="true">
+        <rect x="2" y="28" width="60" height="8" rx="2" fill="#5F5E5A"/>
+        <circle cx="10" cy="36" r="4" fill="#2C2C2A" stroke="#5F5E5A" stroke-width="1"/>
+        <circle cx="54" cy="36" r="4" fill="#2C2C2A" stroke="#5F5E5A" stroke-width="1"/>
+        <circle cx="10" cy="36" r="2" fill="#444441"/>
+        <circle cx="54" cy="36" r="2" fill="#444441"/>
+        <rect x="16" y="20" width="32" height="10" rx="2" fill="#444441"/>
+        <rect x="38" y="10" width="4" height="18" rx="1.5" fill="#3B6D11"/>
+        <polygon points="38,10 40,5 42,10" fill="#3B6D11"/>
+        <rect x="46" y="12" width="4" height="16" rx="1.5" fill="#3B6D11"/>
+        <polygon points="46,12 48,7 50,12" fill="#3B6D11"/>
+        <rect x="20" y="16" width="6" height="4" rx="1" fill="#888780"/>
+        <line x1="16" y1="28" x2="16" y2="36" stroke="#5F5E5A" stroke-width="2"/>
+        <line x1="48" y1="28" x2="48" y2="36" stroke="#5F5E5A" stroke-width="2"/>
+      </svg>
+      <div class="ammo-card-name">ЗРК середньої дальності</div>
+    </div>
+    <div class="ammo-card" onclick="selectAmmo(this,'ЗРК великої дальності')">
+      <svg viewBox="0 0 64 44" fill="none" aria-hidden="true">
+        <rect x="2" y="30" width="60" height="7" rx="2" fill="#5F5E5A"/>
+        <circle cx="10" cy="37" r="4" fill="#2C2C2A" stroke="#5F5E5A" stroke-width="1"/>
+        <circle cx="54" cy="37" r="4" fill="#2C2C2A" stroke="#5F5E5A" stroke-width="1"/>
+        <circle cx="10" cy="37" r="2" fill="#444441"/>
+        <circle cx="54" cy="37" r="2" fill="#444441"/>
+        <rect x="18" y="22" width="28" height="10" rx="2" fill="#3B6D11"/>
+        <rect x="30" y="5" width="5" height="20" rx="2" fill="#3B6D11"/>
+        <polygon points="30,5 32.5,1 35,5" fill="#639922"/>
+        <rect x="40" y="8" width="5" height="17" rx="2" fill="#3B6D11"/>
+        <polygon points="40,8 42.5,4 45,8" fill="#639922"/>
+        <rect x="20" y="20" width="7" height="4" rx="1" fill="#888780"/>
+        <circle cx="32" cy="26" r="3" fill="#888780"/>
+      </svg>
+      <div class="ammo-card-name">ЗРК великої дальності</div>
+    </div>
+    <div class="ammo-card" onclick="selectAmmo(this,'ЗАК (артилерійський)')">
+      <svg viewBox="0 0 64 44" fill="none" aria-hidden="true">
+        <rect x="2" y="30" width="60" height="7" rx="2" fill="#5F5E5A"/>
+        <circle cx="10" cy="37" r="4" fill="#2C2C2A" stroke="#5F5E5A" stroke-width="1"/>
+        <circle cx="54" cy="37" r="4" fill="#2C2C2A" stroke="#5F5E5A" stroke-width="1"/>
+        <circle cx="10" cy="37" r="2" fill="#444441"/>
+        <circle cx="54" cy="37" r="2" fill="#444441"/>
+        <rect x="16" y="22" width="30" height="10" rx="2" fill="#444441"/>
+        <rect x="30" y="14" width="6" height="10" rx="1" fill="#5F5E5A"/>
+        <rect x="28" y="8" width="10" height="8" rx="1" fill="#5F5E5A"/>
+        <rect x="35" y="10" width="22" height="4" rx="2" fill="#888780"/>
+        <polygon points="57,11 62,12 57,13" fill="#888780"/>
+        <rect x="32" y="16" width="4" height="6" rx="1" fill="#888780"/>
+        <line x1="16" y1="30" x2="16" y2="37" stroke="#5F5E5A" stroke-width="2"/>
+        <line x1="46" y1="30" x2="46" y2="37" stroke="#5F5E5A" stroke-width="2"/>
+      </svg>
+      <div class="ammo-card-name">ЗАК (артилерійський)</div>
+    </div>
+    <div class="ammo-card" onclick="selectAmmo(this,'Інше')">
+      <svg viewBox="0 0 64 44" fill="none" aria-hidden="true">
+        <rect x="10" y="8" width="44" height="30" rx="5" fill="none" stroke="#888780" stroke-width="1.5" stroke-dasharray="3 2"/>
+        <text x="32" y="29" text-anchor="middle" font-size="18" font-weight="600" fill="#888780" font-family="sans-serif">?</text>
+      </svg>
+      <div class="ammo-card-name">Інше</div>
+    </div>
+  </div>
+
+  <div class="row2">
+    <div class="field">
+      <label class="label">↓ Прийнято</label>
+      <input type="number" id="received" min="0" placeholder="0" oninput="calcRemain()"/>
+    </div>
+    <div class="field">
+      <label class="label">🔥 Витрачено</label>
+      <input type="number" id="spent" min="0" placeholder="0" oninput="calcRemain()"/>
+    </div>
+  </div>
+  <div class="remain-row">
+    <div class="field">
+      <label class="label">Залишок вчора</label>
+      <input type="number" id="prev_remain" min="0" placeholder="0" oninput="calcRemain()"/>
+    </div>
+    <div class="field">
+      <label class="label">Залишок <span class="auto-badge">авто</span></label>
+      <input type="number" id="remain" min="0" placeholder="0" readonly/>
+    </div>
+  </div>
+  <div class="field">
+    <label class="label">Примітка (необов'язково)</label>
+    <input type="text" id="note" placeholder="напр. отримано зі складу №3"/>
+  </div>
+  <button class="btn-submit" onclick="submitEntry()">
+    ✈ Надіслати звіт
+  </button>
+</div>
+
+<!-- ЖУРНАЛ -->
+<div id="tab-log" class="section" style="display:none">
+  <div class="log-hdr">
+    <span class="log-hdr-title">Записи (<span id="count">0</span>)</span>
+    <button class="btn-csv" onclick="exportCSV()">⬇ Експорт CSV</button>
+  </div>
+  <div id="log-list">
+    <div class="empty">
+      <div class="empty-icon">📋</div>
+      <div class="empty-text">Записів поки немає</div>
+    </div>
+  </div>
+</div>
+
+<!-- ЗВЕДЕННЯ -->
+<div id="tab-stats" class="section" style="display:none">
+  <div class="log-hdr" style="margin-bottom:14px">
+    <span class="log-hdr-title">Зведення за всі записи</span>
+  </div>
+  <div class="stat-row">
+    <div class="stat-card stat-received">
+      <div class="stat-val" id="s-recv">0</div>
+      <div class="stat-lbl">Прийнято</div>
+    </div>
+    <div class="stat-card stat-spent">
+      <div class="stat-val" id="s-spent">0</div>
+      <div class="stat-lbl">Витрачено</div>
+    </div>
+    <div class="stat-card stat-remain">
+      <div class="stat-val" id="s-remain">0</div>
+      <div class="stat-lbl">Залишок</div>
+    </div>
+  </div>
+  <div id="stats-breakdown"></div>
+</div>
+
+</div><!-- /app -->
+<div class="toast" id="toast"></div>
+
+<script>
+const entries = [];
+
+const ammoSVGs = {
+  'ПЗРК': `<svg viewBox="0 0 64 44" width="36" height="25" fill="none"><ellipse cx="14" cy="30" rx="5" ry="8" fill="#5F5E5A"/><rect x="11" y="22" width="6" height="10" rx="1" fill="#444"/><rect x="8" y="24" width="38" height="5" rx="2" fill="#5F5E5A"/><rect x="46" y="23" width="14" height="3" rx="1.5" fill="#3B6D11"/><polygon points="60,24.5 64,25 60,25.5" fill="#3B6D11"/><circle cx="14" cy="36" r="4" fill="#2C2C2A"/><circle cx="14" cy="36" r="2" fill="#444"/></svg>`,
+  'ЗРК малої дальності': `<svg viewBox="0 0 64 44" width="36" height="25" fill="none"><rect x="4" y="28" width="56" height="8" rx="2" fill="#5F5E5A"/><circle cx="12" cy="36" r="4" fill="#2C2C2A"/><circle cx="52" cy="36" r="4" fill="#2C2C2A"/><rect x="20" y="20" width="24" height="10" rx="2" fill="#444"/><rect x="22" y="10" width="3" height="10" rx="1" fill="#3B6D11" transform="rotate(-15 22 10)"/><rect x="30" y="8" width="3" height="12" rx="1" fill="#3B6D11"/><rect x="38" y="10" width="3" height="10" rx="1" fill="#3B6D11" transform="rotate(15 38 10)"/></svg>`,
+  'ЗРК середньої дальності': `<svg viewBox="0 0 64 44" width="36" height="25" fill="none"><rect x="2" y="28" width="60" height="8" rx="2" fill="#5F5E5A"/><circle cx="10" cy="36" r="4" fill="#2C2C2A"/><circle cx="54" cy="36" r="4" fill="#2C2C2A"/><rect x="16" y="20" width="32" height="10" rx="2" fill="#444"/><rect x="38" y="10" width="4" height="18" rx="1.5" fill="#3B6D11"/><polygon points="38,10 40,5 42,10" fill="#3B6D11"/><rect x="46" y="12" width="4" height="16" rx="1.5" fill="#3B6D11"/><polygon points="46,12 48,7 50,12" fill="#3B6D11"/></svg>`,
+  'ЗРК великої дальності': `<svg viewBox="0 0 64 44" width="36" height="25" fill="none"><rect x="2" y="30" width="60" height="7" rx="2" fill="#5F5E5A"/><circle cx="10" cy="37" r="4" fill="#2C2C2A"/><circle cx="54" cy="37" r="4" fill="#2C2C2A"/><rect x="18" y="22" width="28" height="10" rx="2" fill="#3B6D11"/><rect x="30" y="5" width="5" height="20" rx="2" fill="#3B6D11"/><polygon points="30,5 32.5,1 35,5" fill="#639922"/><rect x="40" y="8" width="5" height="17" rx="2" fill="#3B6D11"/><polygon points="40,8 42.5,4 45,8" fill="#639922"/></svg>`,
+  'ЗАК (артилерійський)': `<svg viewBox="0 0 64 44" width="36" height="25" fill="none"><rect x="2" y="30" width="60" height="7" rx="2" fill="#5F5E5A"/><circle cx="10" cy="37" r="4" fill="#2C2C2A"/><circle cx="54" cy="37" r="4" fill="#2C2C2A"/><rect x="16" y="22" width="30" height="10" rx="2" fill="#444"/><rect x="28" y="8" width="10" height="8" rx="1" fill="#5F5E5A"/><rect x="35" y="10" width="22" height="4" rx="2" fill="#888"/><polygon points="57,11 62,12 57,13" fill="#888"/></svg>`,
+  'Інше': `<svg viewBox="0 0 64 44" width="36" height="25" fill="none"><rect x="10" y="8" width="44" height="30" rx="5" fill="none" stroke="#888" stroke-width="1.5" stroke-dasharray="3 2"/><text x="32" y="29" text-anchor="middle" font-size="18" font-weight="600" fill="#888" font-family="sans-serif">?</text></svg>`
+};
+
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+document.getElementById('rdate').value = today();
+
+function selectAmmo(el, val) {
+  document.querySelectorAll('.ammo-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('ammo').value = val;
+}
+
+function showTab(name, el) {
+  ['form','log','stats'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = t === name ? 'block' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  if (name === 'log') renderLog();
+  if (name === 'stats') renderStats();
+}
+
+function calcRemain() {
+  const p = parseInt(document.getElementById('prev_remain').value) || 0;
+  const r = parseInt(document.getElementById('received').value) || 0;
+  const s = parseInt(document.getElementById('spent').value) || 0;
+  document.getElementById('remain').value = Math.max(0, p + r - s);
+}
+
+function submitEntry() {
+  const unit = document.getElementById('unit').value;
+  const ammo = document.getElementById('ammo').value;
+  const rdate = document.getElementById('rdate').value;
+  if (!unit || !ammo || !rdate) { showToast('Заповніть обов\'язкові поля'); return; }
+  entries.unshift({
+    id: Date.now(), unit, ammo, date: rdate,
+    received: parseInt(document.getElementById('received').value) || 0,
+    spent: parseInt(document.getElementById('spent').value) || 0,
+    prev_remain: parseInt(document.getElementById('prev_remain').value) || 0,
+    remain: parseInt(document.getElementById('remain').value) || 0,
+    note: document.getElementById('note').value,
+    ts: new Date().toLocaleTimeString('uk-UA', {hour:'2-digit',minute:'2-digit'})
+  });
+  ['received','spent','prev_remain','remain','note'].forEach(id => document.getElementById(id).value = '');
+  document.querySelectorAll('.ammo-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('ammo').value = '';
+  showToast('✓ Запис збережено');
+}
+
+function stockColor(pct) {
+  if (pct > 0.5) return 'var(--green)';
+  if (pct > 0.25) return 'var(--amber)';
+  return 'var(--red)';
+}
+
+function renderLog() {
+  document.getElementById('count').textContent = entries.length;
+  const el = document.getElementById('log-list');
+  if (!entries.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Записів поки немає</div></div>';
+    return;
+  }
+  el.innerHTML = entries.map(e => {
+    const total = e.prev_remain + e.received;
+    const pct = total > 0 ? Math.min(e.remain / total, 1) : 0;
+    const pctPx = Math.round(pct * 100);
+    const col = stockColor(pct);
+    const svg = ammoSVGs[e.ammo] || ammoSVGs['Інше'];
+    const bgSvg = (ammoSVGs[e.ammo] || ammoSVGs['Інше']).replace('width="36" height="25"', 'width="90" height="63"');
+    return `<div class="entry-card">
+      <div class="ec-bg">${bgSvg}</div>
+      <div class="ec-top">
+        <span class="ec-unit">${e.unit.split('/')[0].trim()}</span>
+        <span class="ec-date">${e.date} · ${e.ts}</span>
+      </div>
+      <div class="ec-type-row">${svg}<span class="ec-type-badge">${e.ammo}</span></div>
+      <div class="ec-nums">
+        <div class="ec-num received"><div class="ec-num-val">${e.received}</div><div class="ec-num-lbl">прийнято</div></div>
+        <div class="ec-num spent"><div class="ec-num-val">${e.spent}</div><div class="ec-num-lbl">витрачено</div></div>
+        <div class="ec-num"><div class="ec-num-val" style="color:${col}">${e.remain}</div><div class="ec-num-lbl">залишок</div></div>
+      </div>
+      <div class="stock-bar-wrap">
+        <div class="stock-bar-lbl"><span>Рівень запасу</span><span style="color:${col};font-weight:600">${pctPx}%</span></div>
+        <div class="stock-bar-track"><div class="stock-bar-fill" style="width:${pctPx}%;background:${col}"></div></div>
+      </div>
+      ${e.note ? `<div class="ec-note">${e.note}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderStats() {
+  const tR = entries.reduce((s,e) => s + e.received, 0);
+  const tS = entries.reduce((s,e) => s + e.spent, 0);
+  const tRem = entries.length ? entries[0].remain : 0;
+  document.getElementById('s-recv').textContent = tR;
+  document.getElementById('s-spent').textContent = tS;
+  document.getElementById('s-remain').textContent = tRem;
+  const byAmmo = {};
+  entries.forEach(e => {
+    if (!byAmmo[e.ammo]) byAmmo[e.ammo] = {received:0, spent:0, remain:0};
+    byAmmo[e.ammo].received += e.received;
+    byAmmo[e.ammo].spent += e.spent;
+    byAmmo[e.ammo].remain = e.remain;
+  });
+  const bd = document.getElementById('stats-breakdown');
+  if (!Object.keys(byAmmo).length) {
+    bd.innerHTML = '<div class="empty"><div class="empty-icon">📊</div><div class="empty-text">Немає даних</div></div>';
+    return;
+  }
+  bd.innerHTML = '<div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">За типом ЗУ</div>' +
+    Object.entries(byAmmo).map(([k,v]) => {
+      const svg = ammoSVGs[k] || ammoSVGs['Інше'];
+      return `<div class="entry-card" style="margin-bottom:8px">
+        <div class="ec-type-row">${svg}<span class="ec-type-badge">${k}</span></div>
+        <div class="ec-nums">
+          <div class="ec-num received"><div class="ec-num-val">${v.received}</div><div class="ec-num-lbl">прийнято</div></div>
+          <div class="ec-num spent"><div class="ec-num-val">${v.spent}</div><div class="ec-num-lbl">витрачено</div></div>
+          <div class="ec-num"><div class="ec-num-val" style="color:var(--green)">${v.remain}</div><div class="ec-num-lbl">залишок</div></div>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+function exportCSV() {
+  if (!entries.length) { showToast('Немає записів для експорту'); return; }
+  const hdr = 'Дата,Підрозділ,Тип ЗУ,Прийнято,Витрачено,Залишок,Примітка\n';
+  const rows = entries.map(e => [e.date, `"${e.unit}"`, e.ammo, e.received, e.spent, e.remain, `"${e.note||''}"`].join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + hdr + rows], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `ppo_ammo_${today()}.csv`; a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV завантажено');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>
